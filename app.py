@@ -32,11 +32,17 @@ def rename_and_compress_images(files, output_folder):
         compressed_path = os.path.join(output_folder, f"{i+1}.jpg")
         img.save(compressed_path, optimize=True, quality=85)  # Compress image
 
+    # Clean up temporary files
+    for file_path in uploaded_paths:
+        os.remove(file_path)
+
 def create_zip(folder_path):
     # Create a zip file containing all files in the folder
-    with ZipFile('renamed_files.zip', 'w') as zipf:
-        for file in os.listdir(folder_path):
-            zipf.write(os.path.join(folder_path, file), arcname=file)
+    with tempfile.NamedTemporaryFile(delete=False) as temp_zip:
+        with ZipFile(temp_zip, 'w') as zipf:
+            for file in os.listdir(folder_path):
+                zipf.write(os.path.join(folder_path, file), arcname=file)
+    return temp_zip.name
 
 def main():
     st.title("Image Renamer, Compressor, and Zipper")
@@ -51,23 +57,25 @@ def main():
             st.write(file.name)
 
         # Create temporary folder for compressed images
-        temp_folder = 'temp'
-        os.makedirs(temp_folder, exist_ok=True)
+        temp_folder = tempfile.mkdtemp()
 
         # Rename and compress images
         rename_and_compress_images(uploaded_files, temp_folder)
 
         # Create zip file
-        create_zip(temp_folder)
+        zip_file_path = create_zip(temp_folder)
 
         # Provide download link for the zip file
         st.write("Download renamed and compressed files:")
         st.download_button(
             label="Download renamed_files.zip",
-            data=open('renamed_files.zip', 'rb').read(),
+            data=open(zip_file_path, 'rb').read(),
             file_name='renamed_files.zip',
             mime='application/zip'
         )
+
+        # Clean up temporary files
+        os.remove(zip_file_path)
 
 if __name__ == "__main__":
     main()
