@@ -4,11 +4,13 @@ from zipfile import ZipFile
 from PIL import Image
 import tempfile
 
+# Function to rename and compress images
 def rename_and_compress_images(files, output_folder):
     # Create a temporary directory to store the uploaded files
     temp_dir = tempfile.mkdtemp()
     uploaded_paths = []
 
+    # Save uploaded files to temporary directory
     for file in files:
         if hasattr(file, "type"):  # Streamlit has returned a BytesIO object
             with open(os.path.join(temp_dir, file.name), "wb") as f:
@@ -36,6 +38,7 @@ def rename_and_compress_images(files, output_folder):
     for file_path in uploaded_paths:
         os.remove(file_path)
 
+# Function to create zip file
 def create_zip(folder_path):
     # Create a zip file containing all files in the folder
     with tempfile.NamedTemporaryFile(delete=False) as temp_zip:
@@ -44,8 +47,18 @@ def create_zip(folder_path):
                 zipf.write(os.path.join(folder_path, file), arcname=file)
     return temp_zip.name
 
+# Main function
 def main():
-    st.title("Image Renamer, Compressor, and Zipper")
+    st.sidebar.title("PicPack Pro")
+    st.sidebar.write("Welcome to PicPack Pro!")
+    st.sidebar.write("This app helps you rename and compress your images.")
+    st.sidebar.write("Images are renamed numerically in ascending order.")
+    st.sidebar.write("Developed by [Jebin Shaju](https://bento.me/jebinshaju)")
+
+    # Link to GitHub repo
+    st.sidebar.markdown("[GitHub Repo](https://github.com/jebinshaju/picpack)")
+
+    st.title("📷 Image Renamer, Compressor, and Zipper 📦")
 
     # Upload files
     uploaded_files = st.file_uploader("Upload images", accept_multiple_files=True)
